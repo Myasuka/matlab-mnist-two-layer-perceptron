@@ -13,7 +13,7 @@ function [] = applyStochasticSquaredErrorTwoLayerPerceptronMNIST()
     end;
     
     % Choose form of MLP:
-    numberOfHiddenUnits = 700;
+    numberOfHiddenUnits = 300;
     
     % Choose appropriate parameters.
     learningRate = 0.1;
@@ -24,16 +24,18 @@ function [] = applyStochasticSquaredErrorTwoLayerPerceptronMNIST()
     
     % Choose batch size and epochs. Remember there are 60k input values.
     batchSize = 100;
-    epochs = 500;
+    epochs = 15000;
     
     fprintf('Train twolayer perceptron with %d hidden units.\n', numberOfHiddenUnits);
     fprintf('Learning rate: %d.\n', learningRate);
+    
     
     [hiddenWeights, outputWeights, error] = trainStochasticSquaredErrorTwoLayerPerceptron(activationFunction, dActivationFunction, numberOfHiddenUnits, inputValues, targetValues, epochs, batchSize, learningRate);
     
     % Load validation set.
     inputValues = loadMNISTImages('t10k-images.idx3-ubyte');
     labels = loadMNISTLabels('t10k-labels.idx1-ubyte');
+   
     
     % Choose decision rule.
     fprintf('Validation:\n');
@@ -42,4 +44,5 @@ function [] = applyStochasticSquaredErrorTwoLayerPerceptronMNIST()
     
     fprintf('Classification errors: %d\n', classificationErrors);
     fprintf('Correctly classified: %d\n', correctlyClassified);
+    
 end

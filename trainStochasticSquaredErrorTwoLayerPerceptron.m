@@ -33,42 +33,35 @@ function [hiddenWeights, outputWeights, error] = trainStochasticSquaredErrorTwoL
     hiddenWeights = hiddenWeights./size(hiddenWeights, 2);
     outputWeights = outputWeights./size(outputWeights, 2);
     
-    n = zeros(batchSize);
     
     figure; hold on;
 
-    for t = 1: epochs
-        for k = 1: batchSize
-            % Select which input vector to train on.
-            n(k) = floor(rand(1)*trainingSetSize + 1);
+    for k = 1: epochs
+       % Select which input vector to train on.
+       n = floor(max(rand(1)*trainingSetSize - batchSize, 1));
             
-            % Propagate the input vector through the network.
-            inputVector = inputValues(:, n(k));
-            hiddenActualInput = hiddenWeights*inputVector;
-            hiddenOutputVector = activationFunction(hiddenActualInput);
-            outputActualInput = outputWeights*hiddenOutputVector;
-            outputVector = activationFunction(outputActualInput);
+       % Propagate the input vector through the network.
+       inputVector = inputValues(:, n: n + batchSize ); 
+       hiddenActualInput = hiddenWeights*inputVector ;
+       hiddenOutputVector = activationFunction(hiddenActualInput) ;
+       outputActualInput = outputWeights*hiddenOutputVector ; 
+       outputVector = activationFunction(outputActualInput);
+       targetVector = targetValues(:, n: n + batchSize);
             
-            targetVector = targetValues(:, n(k));
+       % Backpropagate the errors.
+       outputDelta = dActivationFunction(outputActualInput).*(outputVector - targetVector); 
+       hiddenDelta = dActivationFunction(hiddenActualInput).*(outputWeights'*outputDelta); 
             
-            % Backpropagate the errors.
-            outputDelta = dActivationFunction(outputActualInput).*(outputVector - targetVector);
-            hiddenDelta = dActivationFunction(hiddenActualInput).*(outputWeights'*outputDelta);
-            
-            outputWeights = outputWeights - learningRate.*outputDelta*hiddenOutputVector';
-            hiddenWeights = hiddenWeights - learningRate.*hiddenDelta*inputVector';
+       outputWeights = outputWeights - learningRate.*outputDelta*hiddenOutputVector' / batchSize;
+       hiddenWeights = hiddenWeights - learningRate.*hiddenDelta*inputVector' / batchSize; 
+       if mod(k, 100) == 0
+          result = activationFunction(outputWeights*activationFunction(hiddenWeights*inputVector)) - targetVector;
+          error = 0;
+          for i = 1: size(result,2)
+              error += norm(result(:,i), 2);
+          end;
+          error = error / batchSize;
+          plot(k/100, error,'*');
         end;
-        
-        % Calculate the error for plotting.
-        error = 0;
-        for k = 1: batchSize
-            inputVector = inputValues(:, n(k));
-            targetVector = targetValues(:, n(k));
-            
-            error = error + norm(activationFunction(outputWeights*activationFunction(hiddenWeights*inputVector)) - targetVector, 2);
-        end;
-        error = error/batchSize;
-        
-        plot(t, error,'*');
-    end;
+     end;   
 end
